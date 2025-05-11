@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RestaurantReservation.Db.Models.Enum;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,7 @@ namespace RestaurantReservation.Db.Models.Entities
         public Restaurant Restaurant { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; } 
-        public string Position { get; set; }
+        public EmployeePosition Position { get; set; }
         public List<Order> oredres { get; set; }
 
     }
