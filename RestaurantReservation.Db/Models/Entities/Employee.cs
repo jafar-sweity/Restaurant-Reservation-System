@@ -10,14 +10,15 @@ namespace RestaurantReservation.Db.Models.Entities
     {
         public Employee()
         {
-            Reservations = new List<Reservation>();
+            oredres = new List<Order>();
         }
         public int EmployeeId { get; set; }
         public int RestaurantId { get; set; }
+        public Restaurant Restaurant { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; } 
         public string Position { get; set; }
-        public List<Reservation> Reservations { get; set; }
+        public List<Order> oredres { get; set; }
 
     }
 }
