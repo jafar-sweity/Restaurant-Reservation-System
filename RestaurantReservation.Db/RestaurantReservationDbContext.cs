@@ -2,6 +2,7 @@
 using RestaurantReservation.Db.Configurations;
 using RestaurantReservation.Db.Extensions;
 using RestaurantReservation.Db.Models.Entities;
+using RestaurantReservation.Db.Models.Views;
 
 namespace RestaurantReservation.Db
 {
@@ -15,6 +16,9 @@ namespace RestaurantReservation.Db
         public DbSet<Restaurant> Restaurants { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<Table> Tables { get; set; }
+        public DbSet<ReservationDetailsView> ReservationDetailsView { get; set; }
+        public DbSet<EmployeeRestaurantDetailsView> EmployeeRestaurantDetailsView { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
