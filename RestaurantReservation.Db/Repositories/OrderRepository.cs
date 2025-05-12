@@ -23,6 +23,11 @@ namespace RestaurantReservation.Db.Repositories
                                 .Where(o => o.ReservationId == ReservationId).ToListAsync();
         }
 
+        public async Task<decimal> CalculateAverageOrderAmount(int EmployeeId)
+        {
+            var avg = await _context.Orders.Where(o => o.EmployeeId == EmployeeId).AverageAsync(o => o.TotalAmount);
+            return (decimal)avg;
+        }
     }
 
 }
