@@ -19,7 +19,6 @@ namespace RestaurantReservation.Db.Configurations
                 .WithMany(r=>r.MenuItems)
                 .HasForeignKey(m=>m.RestaurantId)
                 .OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 

@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantReservation.Db.Models.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RestaurantReservation.Db.Repositories
 {
@@ -18,7 +13,6 @@ namespace RestaurantReservation.Db.Repositories
         }
 
         [DbFunction("fn_CalculateRestaurantRevenue", "dbo")]
-
         public Task<decimal> CalculateRestaurantRevenueAsync(int restaurantId)
         {
             var revenu = _context.Restaurants
@@ -26,7 +20,6 @@ namespace RestaurantReservation.Db.Repositories
                                  .Select(r=>_context.CalculateRestaurantRevenue(r.RestaurantId))
                                  .FirstOrDefaultAsync();
             return revenu;
-
         }
     }
 }

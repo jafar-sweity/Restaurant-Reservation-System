@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RestaurantReservation.Db.Models.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RestaurantReservation.Db.Configurations
 {
@@ -22,8 +17,6 @@ namespace RestaurantReservation.Db.Configurations
             builder.HasOne(r=>r.Restaurant).WithMany(e => e.Employees)
                 .HasForeignKey(e => e.RestaurantId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-
         }
     }
 }

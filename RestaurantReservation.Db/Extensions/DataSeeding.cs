@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantReservation.Db.Models.Entities;
 using RestaurantReservation.Db.Models.Enum;
-using System;
 
 namespace RestaurantReservation.Db.Extensions
 {

@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestaurantReservation.Db.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RestaurantReservation.Db.Repositories
 {
@@ -37,7 +32,6 @@ namespace RestaurantReservation.Db.Repositories
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
         }
-
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);

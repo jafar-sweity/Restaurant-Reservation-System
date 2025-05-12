@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RestaurantReservation.Db.Models.Entities
+﻿namespace RestaurantReservation.Db.Models.Entities
 {
     public class Table
     {
@@ -12,10 +6,10 @@ namespace RestaurantReservation.Db.Models.Entities
         {
             Reservations = new List<Reservation>();
         }
+
         public int tableId { get; set; }
         public int restaurantId { get; set; }
         public Restaurant Restaurant { get; set; }
-
         public int capacity { get; set; }
         public List<Reservation> Reservations { get; set; }
     }

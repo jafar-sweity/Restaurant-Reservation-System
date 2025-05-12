@@ -1,10 +1,5 @@
 ﻿using RestaurantReservation.Db;
 using RestaurantReservation.Db.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RestaurantReservation
 {
@@ -24,9 +19,6 @@ namespace RestaurantReservation
             await TestGetEmployeesWithRestaurantDetailsAsync();
             await TestCalculateRestaurantRevenueAsync();
             await TestGetCustomersWithReservationsAbovePartySizeAsync();
-
-
-
         }
 
         private async Task TestListManagers()
@@ -84,8 +76,6 @@ namespace RestaurantReservation
             decimal revenue = await restaurantRepo.CalculateRestaurantRevenueAsync(restaurantId);
 
             Console.WriteLine($"\nRevenue for Restaurant ID {restaurantId}: {revenue}");
-
-
         }
 
         private async Task TestGetCustomersWithReservationsAbovePartySizeAsync()

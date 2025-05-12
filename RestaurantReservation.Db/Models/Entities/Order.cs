@@ -10,8 +10,9 @@ namespace RestaurantReservation.Db.Models.Entities
     {
         public Order()
         {
-
+            OrderItems = new List<OrderItem>();
         }
+
         public int OrderId { get; set; }
         public int ReservationId { get; set; }
         public Reservation Reservation { get; set; }

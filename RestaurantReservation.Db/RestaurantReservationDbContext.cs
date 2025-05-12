@@ -30,7 +30,6 @@ namespace RestaurantReservation.Db
                 nameof(CalculateRestaurantRevenue),
                 new[] { typeof(int) })).HasName("fn_CalculateRestaurantRevenue");
         }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
