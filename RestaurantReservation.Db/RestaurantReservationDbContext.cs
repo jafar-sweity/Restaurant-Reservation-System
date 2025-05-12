@@ -18,12 +18,17 @@ namespace RestaurantReservation.Db
         public DbSet<Table> Tables { get; set; }
         public DbSet<ReservationDetailsView> ReservationDetailsView { get; set; }
         public DbSet<EmployeeRestaurantDetailsView> EmployeeRestaurantDetailsView { get; set; }
-
+        public decimal CalculateRestaurantRevenue(int restaurantId) => throw new Exception();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(CustomerConfiguration).Assembly);
             modelBuilder.Seed();
+            modelBuilder.HasDbFunction(
+
+                typeof(RestaurantReservationDbContext).GetMethod(
+                nameof(CalculateRestaurantRevenue),
+                new[] { typeof(int) })).HasName("fn_CalculateRestaurantRevenue");
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

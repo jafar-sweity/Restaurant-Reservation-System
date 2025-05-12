@@ -608,6 +608,66 @@ namespace RestaurantReservation.Db.Migrations
                         });
                 });
 
+            modelBuilder.Entity("RestaurantReservation.Db.Models.Views.EmployeeRestaurantDetailsView", b =>
+                {
+                    b.Property<string>("EmployeeFirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("First_Name");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int")
+                        .HasColumnName("employee_id");
+
+                    b.Property<string>("EmployeeLastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Last_Name");
+
+                    b.Property<int>("EmployeePosition")
+                        .HasColumnType("int")
+                        .HasColumnName("Position");
+
+                    b.Property<string>("RestaurantName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_EmployeeRestaurantDetails", (string)null);
+                });
+
+            modelBuilder.Entity("RestaurantReservation.Db.Models.Views.ReservationDetailsView", b =>
+                {
+                    b.Property<string>("CustomerFirstName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerLastName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PartySize")
+                        .HasColumnType("int")
+                        .HasColumnName("Party_Size");
+
+                    b.Property<DateTime>("ReservationDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Reservation_Date");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("int")
+                        .HasColumnName("Reservation_Id");
+
+                    b.Property<string>("RestaurantName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("vw_ReservationDetails", (string)null);
+                });
+
             modelBuilder.Entity("RestaurantReservation.Db.Models.Entities.Employee", b =>
                 {
                     b.HasOne("RestaurantReservation.Db.Models.Entities.Restaurant", "Restaurant")
