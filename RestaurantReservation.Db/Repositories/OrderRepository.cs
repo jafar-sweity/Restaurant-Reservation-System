@@ -21,7 +21,8 @@ namespace RestaurantReservation.Db.Repositories
                                 .Include(o => o.OrderItems)
                                 .ThenInclude(oi => oi.Item)
                                 .Where(o => o.ReservationId == ReservationId).ToListAsync();
-
         }
+
     }
+
 }
