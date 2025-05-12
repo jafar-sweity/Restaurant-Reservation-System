@@ -23,6 +23,8 @@ namespace RestaurantReservation
             await TestGetReservationDetailsAsync();
             await TestGetEmployeesWithRestaurantDetailsAsync();
             await TestCalculateRestaurantRevenueAsync();
+            await TestGetCustomersWithReservationsAbovePartySizeAsync();
+
 
 
         }
@@ -84,6 +86,28 @@ namespace RestaurantReservation
             Console.WriteLine($"\nRevenue for Restaurant ID {restaurantId}: {revenue}");
 
 
+        }
+
+        private async Task TestGetCustomersWithReservationsAbovePartySizeAsync()
+        {
+            var customerRepo = new CustomerRepository(_context);
+
+            int partySize = 1;
+
+            var customersWithLargeReservations = await customerRepo.GetCustomersWithReservationsAbovePartySizeAsync(partySize);
+
+            if (customersWithLargeReservations.Count > 0)
+            {
+                Console.WriteLine($"\nCustomers with reservations larger than {partySize}:");
+                foreach (var customer in customersWithLargeReservations)
+                {
+                    Console.WriteLine($"{customer.FirstName} {customer.LastName}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"No customers found with reservations larger than {partySize}.");
+            }
         }
     }
 }
