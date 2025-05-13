@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using RestaurantReservation.Db.Configurations;
 using RestaurantReservation.Db.Extensions;
 using RestaurantReservation.Db.Models.Entities;
@@ -8,6 +9,11 @@ namespace RestaurantReservation.Db
 {
     public class RestaurantReservationDbContext : DbContext
     {
+        public RestaurantReservationDbContext(DbContextOptions<RestaurantReservationDbContext> options)
+          : base(options)
+        {
+        }
+
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<MenuItem> MenuItems { get; set; }
@@ -29,13 +35,6 @@ namespace RestaurantReservation.Db
                 typeof(RestaurantReservationDbContext).GetMethod(
                 nameof(CalculateRestaurantRevenue),
                 new[] { typeof(int) })).HasName("fn_CalculateRestaurantRevenue");
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=LAPTOP-49OTT63M\\SQLEXPRESS; Database=RestaurantReservationCore;Integrated Security = SSPI; TrustServerCertificate = True;");
-            }
         }
     }
 }

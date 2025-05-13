@@ -14,10 +14,10 @@ namespace RestaurantReservation
 
         public async Task Test()
         {
-            await TestListManagers();
-            await TestGetReservationDetailsAsync();
-            await TestGetEmployeesWithRestaurantDetailsAsync();
-            await TestCalculateRestaurantRevenueAsync();
+            //await TestListManagers();
+            //await TestGetReservationDetailsAsync();
+            //await TestGetEmployeesWithRestaurantDetailsAsync();
+            //await TestCalculateRestaurantRevenueAsync();
             await TestGetCustomersWithReservationsAbovePartySizeAsync();
         }
 
