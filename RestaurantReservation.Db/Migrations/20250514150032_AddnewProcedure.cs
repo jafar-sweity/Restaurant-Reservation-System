@@ -22,13 +22,12 @@ namespace RestaurantReservation.Db.Migrations
                     WHERE r.party_size > @min_party_size;
                 END;
                 """);
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP PROCEDURE sp_FindCustomersWithPartySizeLargerThan");
+            migrationBuilder.Sql("DROP PROCEDURE IF EXISTS sp_FindCustomersWithPartySizeLargerThan;");
         }
     }
 }

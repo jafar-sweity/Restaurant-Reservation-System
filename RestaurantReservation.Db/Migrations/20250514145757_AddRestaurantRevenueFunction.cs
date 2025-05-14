@@ -27,12 +27,13 @@ namespace RestaurantReservation.Db.Migrations
                 END;
                 """
               );
+
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("DROP FUNCTION fn_CalculateRestaurantRevenue");
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS fn_CalculateRestaurantRevenue;");
         }
     }
 }

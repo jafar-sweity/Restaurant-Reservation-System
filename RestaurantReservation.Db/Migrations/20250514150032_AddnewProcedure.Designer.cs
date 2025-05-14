@@ -12,8 +12,8 @@ using RestaurantReservation.Db;
 namespace RestaurantReservation.Db.Migrations
 {
     [DbContext(typeof(RestaurantReservationDbContext))]
-    [Migration("20250512191623_AddRestaurantRevenueFunction")]
-    partial class AddRestaurantRevenueFunction
+    [Migration("20250514150032_AddnewProcedure")]
+    partial class AddnewProcedure
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
