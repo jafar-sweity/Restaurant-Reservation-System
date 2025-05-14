@@ -14,12 +14,15 @@ namespace RestaurantReservation.Db.Repositories
             return  await _context.Orders
                                 .Include(o => o.OrderItems)
                                 .ThenInclude(oi => oi.Item)
-                                .Where(o => o.ReservationId == ReservationId).ToListAsync();
+                                .Where(o => o.ReservationId == ReservationId)
+                                .ToListAsync();
         }
 
         public async Task<decimal> CalculateAverageOrderAmount(int EmployeeId)
         {
-            var avg = await _context.Orders.Where(o => o.EmployeeId == EmployeeId).AverageAsync(o => o.TotalAmount);
+            var avg = await _context.Orders
+                                    .Where(o => o.EmployeeId == EmployeeId)
+                                    .AverageAsync(o => o.TotalAmount);
             return (decimal)avg;
         }
     }
