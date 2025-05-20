@@ -31,4 +31,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
