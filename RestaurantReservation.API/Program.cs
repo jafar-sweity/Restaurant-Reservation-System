@@ -1,9 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using RestaurantReservation.Db;
+using RestaurantReservation.Db.Interfaces;
+using RestaurantReservation.Db.Repositories;
+using AutoMapper; 
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<RestaurantReservationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("RestaurantReservationDb")));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // Ensure AutoMapper NuGet package is installed
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -23,3 +31,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
