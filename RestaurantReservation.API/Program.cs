@@ -12,6 +12,7 @@ builder.Services.AddDbContext<RestaurantReservationDbContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // Ensure AutoMapper NuGet package is installed
 
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
