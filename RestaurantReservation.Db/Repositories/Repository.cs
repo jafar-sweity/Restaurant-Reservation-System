@@ -36,5 +36,10 @@ namespace RestaurantReservation.Db.Repositories
         {
             return await _dbSet.FindAsync(id);
         }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await _dbSet.ToListAsync();
+        }
     }
 }
