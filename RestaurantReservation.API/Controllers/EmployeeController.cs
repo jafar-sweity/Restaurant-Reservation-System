@@ -4,6 +4,7 @@ using RestaurantReservation.API.Models.Employee;
 using RestaurantReservation.API.Models.Employees;
 using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Models.Entities;
+using RestaurantReservation.Db.Repositories;
 
 namespace RestaurantReservation.API.Controllers
 {
@@ -12,7 +13,7 @@ namespace RestaurantReservation.API.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IRepository<Employee> _repository;
-        private readonly IRepository<Restaurant> _reservationRepository;
+        private readonly RestaurantRepository _reservationRepository;
 
         private readonly IMapper _mapper;
 
@@ -53,8 +54,8 @@ namespace RestaurantReservation.API.Controllers
             {
                 return BadRequest();
             }
-            var existingRestaurant = await _reservationRepository.GetByIdAsync(employeeCreationDto.RestaurantId);
-            if (existingRestaurant == null)
+            var existingRestaurant = await _reservationRepository.RestaurantExistsAsync(employeeCreationDto.RestaurantId);
+            if (! existingRestaurant)
             {
                 return NotFound($"Restaurant with ID {employeeCreationDto.RestaurantId} not found.");
             }
