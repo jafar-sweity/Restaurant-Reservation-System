@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantReservation.API.Models.Employee;
 using RestaurantReservation.API.Models.Employees;
@@ -83,6 +84,36 @@ namespace RestaurantReservation.API.Controllers
                 return NotFound($"Restaurant with ID {employeeUpdateDto.RestaurantId} not found.");
             }
             var employee = _mapper.Map<Employee>(employeeUpdateDto);
+            employee.EmployeeId = id;
+            await _repository.UpdateAsync(employee);
+            var updatedEmployee = _mapper.Map<EmployeeDto>(employee);
+            return Ok(updatedEmployee);
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult<EmployeeDto>> PatchEmployee(int id, JsonPatchDocument<EmployeeUpdateDto> patchDocument)
+        {
+            if (patchDocument == null)
+            {
+                return BadRequest();
+            }
+
+            var existingEmployee = await _repository.GetByIdAsync(id);
+
+            if (existingEmployee == null)
+            {
+                return NotFound($"Employee with ID {id} not found.");
+            }
+
+            var employeeToPatch = _mapper.Map<EmployeeUpdateDto>(existingEmployee);
+            patchDocument.ApplyTo(employeeToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var employee = _mapper.Map<Employee>(employeeToPatch);
             employee.EmployeeId = id;
             await _repository.UpdateAsync(employee);
             var updatedEmployee = _mapper.Map<EmployeeDto>(employee);

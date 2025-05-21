@@ -14,6 +14,7 @@ namespace RestaurantReservation.API.Profiles
                 .ForMember(dest => dest.PositionName, opt => opt.MapFrom(src => ((EmployeePosition)
                 src.Position).ToString()));
              CreateMap<EmployeeCreationDto, Employee>().ReverseMap();
+            CreateMap<EmployeeUpdateDto, Employee>().ReverseMap();
         }
     }
 }
