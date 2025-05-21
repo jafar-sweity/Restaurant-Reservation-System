@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using RestaurantReservation.API.Models.Employee;
 using RestaurantReservation.API.Models.Employees;
 using RestaurantReservation.Db.Models.Entities;
+using RestaurantReservation.Db.Models.Enum;
 
 namespace RestaurantReservation.API.Profiles
 {
@@ -8,7 +10,10 @@ namespace RestaurantReservation.API.Profiles
     {
         public EmployeeProfile()
         {
-            CreateMap<Employee, EmployeeDto>().ReverseMap();
+            CreateMap<Employee, EmployeeDto>()
+                .ForMember(dest => dest.PositionName, opt => opt.MapFrom(src => ((EmployeePosition)
+                src.Position).ToString()));
+             CreateMap<EmployeeCreationDto, Employee>().ReverseMap();
         }
     }
 }
