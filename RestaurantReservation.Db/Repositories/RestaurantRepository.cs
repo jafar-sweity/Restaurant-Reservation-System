@@ -21,10 +21,5 @@ namespace RestaurantReservation.Db.Repositories
                                  .FirstOrDefaultAsync();
             return revenu;
         }
-
-        public async Task<bool> RestaurantExistsAsync (int restaurantId)
-        {
-            return await _context.Restaurants.AnyAsync(r => r.RestaurantId == restaurantId);
-        }
     }
 }

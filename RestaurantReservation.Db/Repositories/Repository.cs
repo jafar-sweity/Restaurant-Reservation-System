@@ -41,5 +41,10 @@ namespace RestaurantReservation.Db.Repositories
         {
             return await _dbSet.ToListAsync();
         }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _dbSet.FindAsync(id) != null;
+        }
     }
 }
