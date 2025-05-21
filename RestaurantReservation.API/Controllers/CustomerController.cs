@@ -33,5 +33,31 @@ namespace RestaurantReservation.API.Controllers
             return Ok(customerDtos);
         }
 
+        [HttpGet("{id:int}", Name = "GetCustomer")]
+        public async Task<ActionResult<CustomerDto>> GetCustomer(int id)
+        {
+            var customer = await _repository.GetByIdAsync(id);
+            if (customer == null)
+            {
+                return NotFound($"Customer with ID {id} not found.");
+            }
+            var customerDto = _mapper.Map<CustomerDto>(customer);
+            return Ok(customerDto);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<CustomerDto>> CreateCustomer(CustomerCreationDto customerCreationDto)
+        {
+            if (customerCreationDto == null)
+            {
+                return BadRequest();
+            }
+
+            var customer = _mapper.Map<Customer>(customerCreationDto);
+            var addedCustomer = await _repository.CreatAsync(customer);
+            var returnedCustomer = _mapper.Map<CustomerDto>(addedCustomer);
+
+            return CreatedAtRoute(nameof(GetCustomer), new { id = returnedCustomer.CustomerId }, returnedCustomer);
+        }
     }
 }
