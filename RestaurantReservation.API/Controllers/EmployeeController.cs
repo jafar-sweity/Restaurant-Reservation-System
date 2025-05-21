@@ -12,6 +12,8 @@ namespace RestaurantReservation.API.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IRepository<Employee> _repository;
+        private readonly IRepository<Restaurant> _reservationRepository;
+
         private readonly IMapper _mapper;
 
         public EmployeeController(IRepository<Employee> repository, IMapper mapper)
@@ -50,6 +52,11 @@ namespace RestaurantReservation.API.Controllers
             if (employeeCreationDto == null)
             {
                 return BadRequest();
+            }
+            var existingRestaurant = await _reservationRepository.GetByIdAsync(employeeCreationDto.RestaurantId);
+            if (existingRestaurant == null)
+            {
+                return NotFound($"Restaurant with ID {employeeCreationDto.RestaurantId} not found.");
             }
             var employee = _mapper.Map<Employee>(employeeCreationDto);
             var addedEmployee = await _repository.CreatAsync(employee);
