@@ -59,5 +59,19 @@ namespace RestaurantReservation.API.Controllers
 
             return CreatedAtRoute(nameof(GetCustomer), new { id = returnedCustomer.CustomerId }, returnedCustomer);
         }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> UpdateCustomer(int id, CustomerUpdateDto customerUpdateDto)
+        {
+            var existingCustomer = await _repository.GetByIdAsync(id);
+            if (existingCustomer == null)
+            {
+                return BadRequest("Customer ID mismatch.");
+            }
+
+            _mapper.Map(customerUpdateDto, existingCustomer); 
+            await _repository.UpdateAsync(existingCustomer);
+            return NoContent();
+        }
     }
 }
