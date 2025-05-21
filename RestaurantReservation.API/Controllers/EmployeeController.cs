@@ -119,5 +119,17 @@ namespace RestaurantReservation.API.Controllers
             var updatedEmployee = _mapper.Map<EmployeeDto>(employee);
             return Ok(updatedEmployee);
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteEmployee(int id)
+        {
+            var existingEmployee = await _repository.GetByIdAsync(id);
+            if (existingEmployee == null)
+            {
+                return NotFound($"Employee with ID {id} not found.");
+            }
+            await _repository.DeleteAsync(existingEmployee);
+            return NoContent();
+        }
     }
 }
