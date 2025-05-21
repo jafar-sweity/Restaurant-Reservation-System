@@ -32,5 +32,6 @@ namespace RestaurantReservation.API.Controllers
             var customerDtos = _mapper.Map<IEnumerable<CustomerDto>>(customers);
             return Ok(customerDtos);
         }
+
     }
 }
