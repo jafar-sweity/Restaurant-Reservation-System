@@ -2,12 +2,17 @@ using Microsoft.EntityFrameworkCore;
 using RestaurantReservation.Db;
 using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Repositories;
-using AutoMapper; 
-
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<RestaurantReservationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("RestaurantReservationDb")));
+
+builder.Services
+    .AddControllers()
+    .AddNewtonsoftJson(); 
 
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // Ensure AutoMapper NuGet package is installed

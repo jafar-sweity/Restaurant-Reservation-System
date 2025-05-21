@@ -3,6 +3,7 @@ using RestaurantReservation.API.Models.Customer;
 using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace RestaurantReservation.API.Controllers
 {
@@ -70,6 +71,29 @@ namespace RestaurantReservation.API.Controllers
             }
 
             _mapper.Map(customerUpdateDto, existingCustomer); 
+            await _repository.UpdateAsync(existingCustomer);
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> PartialUpdateCustomer(int id, JsonPatchDocument<CustomerUpdateDto> patchDoc)
+        {
+            if (patchDoc == null)
+            {
+                return BadRequest();
+            }
+            var existingCustomer = await _repository.GetByIdAsync(id);
+            if (existingCustomer == null)
+            {
+                return NotFound($"Customer with ID {id} not found.");
+            }
+            var customerToPatch = _mapper.Map<CustomerUpdateDto>(existingCustomer);
+            patchDoc.ApplyTo(customerToPatch, ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            _mapper.Map(customerToPatch, existingCustomer);
             await _repository.UpdateAsync(existingCustomer);
             return NoContent();
         }
