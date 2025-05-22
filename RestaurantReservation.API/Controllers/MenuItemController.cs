@@ -110,6 +110,5 @@ namespace RestaurantReservation.API.Controllers
             await _repository.DeleteAsync(menuItem);
             return NoContent();
         }
-        // commit masage for delete api = 
     }
 }
