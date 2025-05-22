@@ -9,7 +9,7 @@ namespace RestaurantReservation.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrdersController : Controller
+    public class OrdersController : ControllerBase
     {
         private readonly IRepository<Order> _repository;
         private readonly IMapper _mapper;

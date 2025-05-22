@@ -9,7 +9,7 @@ namespace RestaurantReservation.API.Controllers
 {
     [Route("api/orders/{orderId}/order-items")]
     [ApiController]
-    public class OrderItemController : Controller
+    public class OrderItemController : ControllerBase
     {
         private readonly IRepository<OrderItem> _repository;
         private readonly IRepository<Order> _orderRepository;
