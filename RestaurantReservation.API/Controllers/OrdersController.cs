@@ -40,18 +40,5 @@ namespace RestaurantReservation.API.Controllers
             var orderDto = _mapper.Map<OrderDto>(order);
             return Ok(orderDto);
         }
-
-        [HttpPost]
-        public async Task<ActionResult<OrderDto>> CreateOrder(OrderCreationDto orderCreationDto)
-        {
-            if (orderCreationDto == null)
-            {
-                return BadRequest();
-            }
-            var order = _mapper.Map<Order>(orderCreationDto);
-            var addedOrder = await _repository.CreatAsync(order);
-            var returnedOrder = _mapper.Map<OrderDto>(addedOrder);
-            return CreatedAtRoute("GetOrder", new { id = returnedOrder.OrderId }, returnedOrder);
-        }
     }
 }

@@ -7,9 +7,12 @@ using RestaurantReservation.Db.Models.Entities;
 
 namespace RestaurantReservation.API.Controllers
 {
+    [Route("api/orders/{orderId}/order-items")]
+    [ApiController]
     public class OrderItemController : Controller
     {
         private readonly IRepository<OrderItem> _repository;
+        private readonly IRepository<Order> _orderRepository;
         private readonly IMapper _mapper;
 
         public OrderItemController(IRepository<OrderItem> repository, IMapper mapper)
@@ -55,14 +58,21 @@ namespace RestaurantReservation.API.Controllers
             return Ok(orderItemDto);
         }
 
+      
         [HttpPost]
-        public async Task<ActionResult<OrderItemDto>> CreateOrderItem(OrderItemDto orderItemDto)
+        public async Task<ActionResult<OrderItemDto>> CreateOrderItem(int orderId, OrderItemCreationDto orderItemCreationDto)
         {
-            if (orderItemDto == null)
+            if (orderItemCreationDto == null)
             {
                 return BadRequest();
             }
-            var orderItem = _mapper.Map<OrderItem>(orderItemDto);
+            var order = await _orderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                return NotFound($"Order with ID {orderId} not found.");
+            }
+            var orderItem = _mapper.Map<OrderItem>(orderItemCreationDto);
+            orderItem.OrderId = orderId;
             var addedOrderItem = await _repository.CreatAsync(orderItem);
             var returnedOrderItem = _mapper.Map<OrderItemDto>(addedOrderItem);
             return CreatedAtRoute("GetOrderItem", new { id = returnedOrderItem.OrderItemId }, returnedOrderItem);
