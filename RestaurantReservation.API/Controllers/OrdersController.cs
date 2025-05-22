@@ -57,12 +57,6 @@ namespace RestaurantReservation.API.Controllers
             return NoContent();
         }
 
-        /// <summary>
-        /// Partially updates an existing order by its ID using a JSON patch document.
-        /// </summary>
-        /// <param name="id">The ID of the order to partially update.</param>
-        /// <param name="patchDocument">The JSON patch document with the updates to apply.</param>
-        /// <returns>A 204 No Content response if successful; otherwise, a 404 Not Found if the order does not exist, or a 400 Bad Request if the patch document is invalid.</returns>
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> PartiallyUpdateOrder(int id, JsonPatchDocument<OrderUpdateDto> patchDocument)
         {
