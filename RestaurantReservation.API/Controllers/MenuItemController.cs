@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantReservation.API.Models.MenuItem;
 using RestaurantReservation.Db.Interfaces;
@@ -72,6 +73,29 @@ namespace RestaurantReservation.API.Controllers
             _mapper.Map(menuItemUpdateDto, existingMenuItem);
             await _repository.UpdateAsync(existingMenuItem);
 
+            return NoContent();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PartialUpdateMenuItem(int id, JsonPatchDocument<MenuItemUpdateDto> patchDoc)
+        {
+            if (patchDoc == null)
+            {
+                return BadRequest();
+            }
+            var menuItem = await _repository.GetByIdAsync(id);
+            if (menuItem == null)
+            {
+                return NotFound();
+            }
+            var menuItemToPatch = _mapper.Map<MenuItemUpdateDto>(menuItem);
+            patchDoc.ApplyTo(menuItemToPatch, ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            _mapper.Map(menuItemToPatch, menuItem);
+            await _repository.UpdateAsync(menuItem);
             return NoContent();
         }
     }
