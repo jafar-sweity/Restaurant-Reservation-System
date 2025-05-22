@@ -67,6 +67,7 @@ namespace RestaurantReservation.API.Controllers
             return CreatedAtRoute("GetOrderItem", new { id = returnedOrderItem.OrderItemId }, returnedOrderItem);
         }
 
+
         [HttpPut("{id:int}")]
         public async Task<ActionResult<OrderItemDto>> UpdateOrderItem(int id, OrderItemDto orderItemDto)
         {
@@ -84,6 +85,17 @@ namespace RestaurantReservation.API.Controllers
             return NoContent();
         }
 
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteOrderItem(int id)
+        {
+            var orderItem = await _repository.GetByIdAsync(id);
+            if (orderItem == null)
+            {
+                return NotFound($"Order item with ID {id} not found.");
+            }
+            await _repository.DeleteAsync(orderItem);
+            return NoContent();
 
+        }
     }
 }
