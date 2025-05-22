@@ -8,6 +8,8 @@ using RestaurantReservation.Db.Repositories;
 
 namespace RestaurantReservation.API.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class MenuItemController : ControllerBase
     {
         private readonly IRepository<MenuItem> _repository;

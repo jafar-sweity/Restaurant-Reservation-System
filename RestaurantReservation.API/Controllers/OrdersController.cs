@@ -7,6 +7,8 @@ using RestaurantReservation.Db.Models.Entities;
 
 namespace RestaurantReservation.API.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class OrdersController : Controller
     {
         private readonly IRepository<Order> _repository;
@@ -81,6 +83,18 @@ namespace RestaurantReservation.API.Controllers
             }
             var updatedOrder = _mapper.Map<Order>(orderToPatch);
             await _repository.UpdateAsync(updatedOrder);
+            return NoContent();
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteOrder(int id)
+        {
+            var existingOrder = await _repository.GetByIdAsync(id);
+            if (existingOrder == null)
+            {
+                return NotFound($"Order with ID {id} not found.");
+            }
+            await _repository.DeleteAsync(existingOrder);
             return NoContent();
         }
     }
