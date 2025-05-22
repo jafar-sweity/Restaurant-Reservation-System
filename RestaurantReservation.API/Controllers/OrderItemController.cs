@@ -54,5 +54,36 @@ namespace RestaurantReservation.API.Controllers
             return Ok(orderItemDto);
         }
 
+        [HttpPost]
+        public async Task<ActionResult<OrderItemDto>> CreateOrderItem(OrderItemDto orderItemDto)
+        {
+            if (orderItemDto == null)
+            {
+                return BadRequest();
+            }
+            var orderItem = _mapper.Map<OrderItem>(orderItemDto);
+            var addedOrderItem = await _repository.CreatAsync(orderItem);
+            var returnedOrderItem = _mapper.Map<OrderItemDto>(addedOrderItem);
+            return CreatedAtRoute("GetOrderItem", new { id = returnedOrderItem.OrderItemId }, returnedOrderItem);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<OrderItemDto>> UpdateOrderItem(int id, OrderItemDto orderItemDto)
+        {
+            if (orderItemDto == null || id != orderItemDto.OrderItemId)
+            {
+                return BadRequest();
+            }
+            var orderItem = await _repository.GetByIdAsync(id);
+            if (orderItem == null)
+            {
+                return NotFound($"Order item with ID {id} not found.");
+            }
+            _mapper.Map(orderItemDto, orderItem);
+            await _repository.UpdateAsync(orderItem);
+            return NoContent();
+        }
+
+
     }
 }
