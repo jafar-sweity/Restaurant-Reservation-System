@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantReservation.API.Models.Reservation;
 using RestaurantReservation.Db.Interfaces;
@@ -65,6 +66,44 @@ namespace RestaurantReservation.API.Controllers
             var reservationDto = _mapper.Map<ReservationDto>(createdReservation);
 
             return CreatedAtRoute("GetReservation", new { id = reservationDto.ReservationId }, reservationDto);
+        }
+
+       
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateReservation(int id, ReservationUpdateDto reservationUpdateDto)
+        {
+            var existingReservation = await _repository.GetByIdAsync(id);
+            if (existingReservation == null)
+            {
+                return NotFound($"Reservation with ID {id} not found.");
+            }
+            var updatedReservation = _mapper.Map<Reservation>(reservationUpdateDto);
+            await _repository.UpdateAsync(updatedReservation);
+            return NoContent();
+        }
+
+      
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> PartiallyUpdateReservation(int id, JsonPatchDocument<ReservationUpdateDto> patchDocument)
+        {
+            if (patchDocument == null)
+            {
+                return BadRequest("Invalid patch document.");
+            }
+            var existingReservation = await _repository.GetByIdAsync(id);
+            if (existingReservation == null)
+            {
+                return NotFound($"Reservation with ID {id} not found.");
+            }
+            var reservationToPatch = _mapper.Map<ReservationUpdateDto>(existingReservation);
+            patchDocument.ApplyTo(reservationToPatch, ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var updatedReservation = _mapper.Map<Reservation>(reservationToPatch);
+            await _repository.UpdateAsync(updatedReservation);
+            return NoContent();
         }
     }
 }
