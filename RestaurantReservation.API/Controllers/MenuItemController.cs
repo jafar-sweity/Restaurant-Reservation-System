@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RestaurantReservation.API.Models.MenuItem;
 using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Models.Entities;
+using RestaurantReservation.Db.Repositories;
 
 namespace RestaurantReservation.API.Controllers
 {
@@ -53,6 +54,25 @@ namespace RestaurantReservation.API.Controllers
             var createdMenuItem = await _repository.CreatAsync(menuItem);
             var menuItemDto = _mapper.Map<MenuItemDto>(createdMenuItem);
             return CreatedAtRoute("GetMenuItem", new { id = menuItemDto.ItemId }, menuItemDto);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateMenuItem(int id, MenuItemUpdateDto menuItemUpdateDto)
+        {
+            var existingMenuItem = await _repository.GetByIdAsync(id);
+
+            if (existingMenuItem is null)
+                return NotFound();
+
+            if (!await _reservationRepository.ExistsAsync(menuItemUpdateDto.RestaurantId))
+            {
+                return NotFound(new { Message = "Restaurant not found." });
+            }
+
+            _mapper.Map(menuItemUpdateDto, existingMenuItem);
+            await _repository.UpdateAsync(existingMenuItem);
+
+            return NoContent();
         }
     }
 }
