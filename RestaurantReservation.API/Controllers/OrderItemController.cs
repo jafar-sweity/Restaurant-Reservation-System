@@ -41,9 +41,18 @@ namespace RestaurantReservation.API.Controllers
             return Ok(orderItemDto);
         }
 
-        //Add GetOrderItem method to retrieve specific order item by ID for a given order
         [HttpGet("order/{orderId:int}")]
-
+        public async Task<ActionResult<OrderItemDto>> GetOrderItemByOrderId(int orderId)
+        {
+            var orderItems = await _repository.GetAllAsync();
+            var orderItem = orderItems.FirstOrDefault(oi => oi.OrderId == orderId);
+            if (orderItem == null)
+            {
+                return NotFound($"Order item with Order ID {orderId} not found.");
+            }
+            var orderItemDto = _mapper.Map<OrderItemDto>(orderItem);
+            return Ok(orderItemDto);
+        }
 
     }
 }
