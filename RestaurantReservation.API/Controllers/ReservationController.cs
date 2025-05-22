@@ -105,5 +105,20 @@ namespace RestaurantReservation.API.Controllers
             await _repository.UpdateAsync(updatedReservation);
             return NoContent();
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteReservation(int id)
+        {
+            var existingReservation = await _repository.GetByIdAsync(id);
+
+            if (existingReservation == null)
+            {
+                return NotFound($"Reservation with ID {id} not found.");
+            }
+
+            await _repository.DeleteAsync(existingReservation);
+
+            return NoContent();
+        }
     }
 }
