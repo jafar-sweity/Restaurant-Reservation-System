@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantReservation.API.Models.OrderItem;
 using RestaurantReservation.Db.Interfaces;
@@ -96,6 +97,29 @@ namespace RestaurantReservation.API.Controllers
             await _repository.DeleteAsync(orderItem);
             return NoContent();
 
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult<OrderItemDto>> PartialUpdateOrderItem(int id, JsonPatchDocument<OrderItemDto> patchDoc)
+        {
+            if (patchDoc == null)
+            {
+                return BadRequest();
+            }
+            var orderItem = await _repository.GetByIdAsync(id);
+            if (orderItem == null)
+            {
+                return NotFound($"Order item with ID {id} not found.");
+            }
+            var orderItemToPatch = _mapper.Map<OrderItemDto>(orderItem);
+            patchDoc.ApplyTo(orderItemToPatch, ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            _mapper.Map(orderItemToPatch, orderItem);
+            await _repository.UpdateAsync(orderItem);
+            return NoContent();
         }
     }
 }
