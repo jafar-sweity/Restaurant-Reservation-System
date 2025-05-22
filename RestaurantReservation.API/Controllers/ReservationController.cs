@@ -44,5 +44,27 @@ namespace RestaurantReservation.API.Controllers
             var reservationDto = _mapper.Map<ReservationDto>(reservation);
             return Ok(reservationDto);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<ReservationDto>> CreateReservation(ReservationCreationDto reservationCreationDto)
+        {
+            if (reservationCreationDto == null)
+            {
+                return BadRequest("Reservation data is null.");
+            }
+
+            var existingRestaurant = await _reservationRepository.ExistsAsync(reservationCreationDto.RestaurantId);
+
+            if (!existingRestaurant)
+            {
+                return NotFound($"Restaurant with ID {reservationCreationDto.RestaurantId} not found.");
+            }
+
+            var reservation = _mapper.Map<Reservation>(reservationCreationDto);
+            var createdReservation = await _repository.CreatAsync(reservation);
+            var reservationDto = _mapper.Map<ReservationDto>(createdReservation);
+
+            return CreatedAtRoute("GetReservation", new { id = reservationDto.ReservationId }, reservationDto);
+        }
     }
 }
