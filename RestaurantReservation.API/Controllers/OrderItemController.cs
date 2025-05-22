@@ -28,5 +28,22 @@ namespace RestaurantReservation.API.Controllers
             var orderItemDtos = _mapper.Map<IEnumerable<OrderItemDto>>(orderItems);
             return Ok(orderItemDtos);
         }
+
+        [HttpGet("{id:int}", Name = "GetOrderItem")]
+        public async Task<ActionResult<OrderItemDto>> GetOrderItem(int id)
+        {
+            var orderItem = await _repository.GetByIdAsync(id);
+            if (orderItem == null)
+            {
+                return NotFound($"Order item with ID {id} not found.");
+            }
+            var orderItemDto = _mapper.Map<OrderItemDto>(orderItem);
+            return Ok(orderItemDto);
+        }
+
+        //Add GetOrderItem method to retrieve specific order item by ID for a given order
+        [HttpGet("order/{orderId:int}")]
+
+
     }
 }
