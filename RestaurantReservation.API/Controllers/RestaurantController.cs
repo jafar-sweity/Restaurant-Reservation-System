@@ -41,5 +41,20 @@ namespace RestaurantReservation.API.Controllers
             var restaurantDto = _mapper.Map<RestaurantDto>(restaurant);
             return Ok(restaurantDto);
         }
+
+        [HttpPost]
+        public async Task<ActionResult<RestaurantDto>> CreateRestaurant(RestaurantCreationDto restaurantCreationDto)
+        {
+            if (restaurantCreationDto == null)
+            {
+                return BadRequest("Restaurant data is null.");
+            }
+
+            var restaurant = _mapper.Map<Restaurant>(restaurantCreationDto);
+            var createdRestaurant = await _repository.CreatAsync(restaurant);
+            var restaurantDto = _mapper.Map<RestaurantDto>(createdRestaurant);
+
+            return CreatedAtRoute("GetRestaurant", new { id = restaurantDto.RestaurantId }, restaurantDto);
+        }
     }
 }
