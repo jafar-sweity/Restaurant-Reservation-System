@@ -14,12 +14,14 @@ namespace RestaurantReservation.API.Controllers
         private readonly IRepository<Reservation> _repository;
         private readonly IRepository<Restaurant> _reservationRepository;
         private readonly IMapper _mapper;
+        private readonly IRepository<Customer> _customerRepository;
 
-        public ReservationsController(IRepository<Reservation> repository, IMapper mapper, IRepository<Restaurant> reservationRepository)
+        public ReservationsController(IRepository<Reservation> repository, IMapper mapper, IRepository<Restaurant> reservationRepository, IRepository<Customer> customerRepository)
         {
             _repository = repository;
             _mapper = mapper;
             _reservationRepository = reservationRepository;
+            _customerRepository = customerRepository;
         }
 
         [HttpGet]
@@ -120,5 +122,27 @@ namespace RestaurantReservation.API.Controllers
 
             return NoContent();
         }
-    }
+
+        [HttpGet("customer/{customerId:int}")]
+        public async Task<ActionResult<IEnumerable<ReservationDto>>> GetReservationsByCustomerId(int customerId)
+        {
+            var existCustomer =  _customerRepository.ExistsAsync(customerId);
+
+            if (!existCustomer.Result)
+            {
+                return NotFound($"Customer with ID {customerId} not found.");
+            }
+
+            var reservations = await _repository.GetAllAsync();
+            var customerReservations = reservations.Where(r => r.customerId == customerId).ToList();
+
+            if (customerReservations == null || !customerReservations.Any())
+            {
+                return NotFound($"No reservations found for customer with ID {customerId}.");
+            }
+
+            var reservationDtos = _mapper.Map<IEnumerable<ReservationDto>>(customerReservations);
+
+            return Ok(reservationDtos);
+        }
 }
