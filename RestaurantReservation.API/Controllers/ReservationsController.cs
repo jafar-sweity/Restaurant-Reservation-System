@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantReservation.API.Models.Order;
 using RestaurantReservation.API.Models.Reservation;
 using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Models.Entities;
@@ -15,13 +16,15 @@ namespace RestaurantReservation.API.Controllers
         private readonly IRepository<Restaurant> _reservationRepository;
         private readonly IMapper _mapper;
         private readonly IRepository<Customer> _customerRepository;
+        private readonly IRepository<Order> _orderRepository;
 
-        public ReservationsController(IRepository<Reservation> repository, IMapper mapper, IRepository<Restaurant> reservationRepository, IRepository<Customer> customerRepository)
+        public ReservationsController(IRepository<Reservation> repository, IMapper mapper, IRepository<Restaurant> reservationRepository, IRepository<Customer> customerRepository,IRepository <Order> orederRepository)
         {
             _repository = repository;
             _mapper = mapper;
             _reservationRepository = reservationRepository;
             _customerRepository = customerRepository;
+            _orderRepository = orederRepository;
         }
 
         [HttpGet]
@@ -70,7 +73,7 @@ namespace RestaurantReservation.API.Controllers
             return CreatedAtRoute("GetReservation", new { id = reservationDto.ReservationId }, reservationDto);
         }
 
-       
+
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateReservation(int id, ReservationUpdateDto reservationUpdateDto)
         {
@@ -84,7 +87,7 @@ namespace RestaurantReservation.API.Controllers
             return NoContent();
         }
 
-      
+
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> PartiallyUpdateReservation(int id, JsonPatchDocument<ReservationUpdateDto> patchDocument)
         {
@@ -126,7 +129,7 @@ namespace RestaurantReservation.API.Controllers
         [HttpGet("customer/{customerId:int}")]
         public async Task<ActionResult<IEnumerable<ReservationDto>>> GetReservationsByCustomerId(int customerId)
         {
-            var existCustomer =  _customerRepository.ExistsAsync(customerId);
+            var existCustomer = _customerRepository.ExistsAsync(customerId);
 
             if (!existCustomer.Result)
             {
@@ -145,4 +148,23 @@ namespace RestaurantReservation.API.Controllers
 
             return Ok(reservationDtos);
         }
+
+        [HttpGet("{reservationId:int}/orders")]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByReservationId(int reservationId)
+        {
+            var existingReservation = await _repository.GetByIdAsync(reservationId);
+            if (existingReservation == null)
+            {
+                return NotFound($"Reservation with ID {reservationId} not found.");
+            }
+            var orders = await _orderRepository.GetAllAsync();
+            var reservationOrders = orders.Where(o => o.ReservationId == reservationId).ToList();
+            if (reservationOrders == null || !reservationOrders.Any())
+            {
+                return NotFound($"No orders found for reservation with ID {reservationId}.");
+            }
+            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(reservationOrders);
+            return Ok(orderDtos);
+        }
+    }
 }
