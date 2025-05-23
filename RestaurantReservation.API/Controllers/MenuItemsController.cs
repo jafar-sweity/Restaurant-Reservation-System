@@ -10,13 +10,13 @@ namespace RestaurantReservation.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MenuItemController : ControllerBase
+    public class MenuItemsController : ControllerBase
     {
         private readonly IRepository<MenuItem> _repository;
         private readonly IRepository<Restaurant> _reservationRepository;
         private readonly IMapper _mapper;
 
-        public MenuItemController(IRepository<MenuItem> repository, IMapper mapper, IRepository<Restaurant> reservationRepository)
+        public MenuItemsController(IRepository<MenuItem> repository, IMapper mapper, IRepository<Restaurant> reservationRepository)
         {
             _repository = repository;
             _mapper = mapper;

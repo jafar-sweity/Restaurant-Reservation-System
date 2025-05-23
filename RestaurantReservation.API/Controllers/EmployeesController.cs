@@ -5,19 +5,20 @@ using RestaurantReservation.API.Models.Employee;
 using RestaurantReservation.API.Models.Employees;
 using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Models.Entities;
+using RestaurantReservation.Db.Models.Enum;
 
 namespace RestaurantReservation.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmployeeController : ControllerBase
+    public class EmployeesController : ControllerBase
     {
         private readonly IRepository<Employee> _repository;
         private readonly IRepository<Restaurant> _reservationRepository;
 
         private readonly IMapper _mapper;
 
-        public EmployeeController(IRepository<Employee> repository, IMapper mapper , IRepository<Restaurant> repository1)
+        public EmployeesController(IRepository<Employee> repository, IMapper mapper , IRepository<Restaurant> repository1)
         {
             _repository = repository;
             _reservationRepository = repository1;
@@ -131,5 +132,20 @@ namespace RestaurantReservation.API.Controllers
             await _repository.DeleteAsync(existingEmployee);
             return NoContent();
         }
+
+        [HttpGet("managers")]
+        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetManagers()
+        {
+            var employees = await _repository.GetAllAsync();
+            if (employees == null || !employees.Any())
+            {
+                return NotFound("No employees found.");
+            }
+
+            var managers = employees.Where(e => e.Position == EmployeePosition.Manager).ToList();
+            var toReturn = _mapper.Map<IEnumerable<EmployeeDto>>(managers);
+            return Ok(toReturn);
+        }
+
     }
 }
