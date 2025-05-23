@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantReservation.API.Models.Table;
 using RestaurantReservation.Db.Interfaces;
@@ -55,8 +56,58 @@ namespace RestaurantReservation.API.Controllers
             var tableDto = _mapper.Map<TableDto>(createdTable);
 
             return CreatedAtRoute("GetTable", new { id = tableDto.TableId }, tableDto);
-
         }
 
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Update(int id, TableUpdateDto tableUpdateDto)
+        {
+            var existingTable = await _repository.GetByIdAsync(id);
+            if (existingTable == null) {
+                return NotFound($"Table with ID {id} not found.");
+            }
+
+            var restaurant = await _restaurantRepository.ExistsAsync(tableUpdateDto.RestaurantId);
+
+            if (!restaurant)
+            {
+                return NotFound($"Restaurant with ID {tableUpdateDto.RestaurantId} not found.");
+            }
+
+            var table = _mapper.Map<Table>(tableUpdateDto);
+            await _repository.UpdateAsync(table);
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> PartialUpdate(int id, JsonPatchDocument<TableUpdateDto> patchDocument)
+        {
+            var existingTable = await _repository.GetByIdAsync(id);
+
+            if (existingTable == null)
+            {
+                return NotFound($"Table with ID {id} not found.");
+            }
+
+            var tableToPatch = _mapper.Map<TableUpdateDto>(existingTable);
+            patchDocument.ApplyTo(tableToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var restaurant = await _restaurantRepository.ExistsAsync(tableToPatch.RestaurantId);
+
+            if (!restaurant)
+            {
+                return NotFound($"Restaurant with ID {tableToPatch.RestaurantId} not found.");
+            }
+
+            var table = _mapper.Map<Table>(tableToPatch);
+            await _repository.UpdateAsync(table);
+
+            return NoContent();
+        }
     }
 }
