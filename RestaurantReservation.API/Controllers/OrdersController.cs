@@ -26,71 +26,54 @@ namespace RestaurantReservation.API.Controllers
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetAllOrders()
         {
             var orders = await _repository.GetAllAsync();
-            if (orders == null || !orders.Any())
-            {
-                return NotFound("No orders found.");
-            }
-            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(orders);
-            return Ok(orderDtos);
+            return orders.Any()
+                ? Ok(_mapper.Map<IEnumerable<OrderDto>>(orders))
+                : NotFound("No orders found.");
         }
 
         [HttpGet("{id:int}", Name = "GetOrder")]
         public async Task<ActionResult<OrderDto>> GetOrder(int id)
         {
             var order = await _repository.GetByIdAsync(id);
-            if (order == null)
-            {
-                return NotFound($"Order with ID {id} not found.");
-            }
-            var orderDto = _mapper.Map<OrderDto>(order);
-            return Ok(orderDto);
+            return order is not null
+                ? Ok(_mapper.Map<OrderDto>(order))
+                : NotFound($"Order {id} not found.");
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateOrder(int id, OrderUpdateDto orderUpdateDto)
+        public async Task<IActionResult> UpdateOrder(int id, OrderUpdateDto updateDto)
         {
-            var existingOrder = await _repository.GetByIdAsync(id);
-            if (existingOrder == null)
-            {
-                return NotFound($"Order with ID {id} not found.");
-            }
-            var updatedOrder = _mapper.Map<Order>(orderUpdateDto);
-            await _repository.UpdateAsync(updatedOrder);
+            var order = await _repository.GetByIdAsync(id);
+            if (order is null) return NotFound($"Order {id} not found.");
+
+            _mapper.Map(updateDto, order);
+            await _repository.UpdateAsync(order);
             return NoContent();
         }
 
         [HttpPatch("{id:int}")]
-        public async Task<IActionResult> PartiallyUpdateOrder(int id, JsonPatchDocument<OrderUpdateDto> patchDocument)
+        public async Task<IActionResult> PartiallyUpdateOrder(int id, JsonPatchDocument<OrderUpdateDto> patchDoc)
         {
-            if (patchDocument == null)
-            {
-                return BadRequest("Invalid patch document.");
-            }
-            var existingOrder = await _repository.GetByIdAsync(id);
-            if (existingOrder == null)
-            {
-                return NotFound($"Order with ID {id} not found.");
-            }
-            var orderToPatch = _mapper.Map<OrderUpdateDto>(existingOrder);
-            patchDocument.ApplyTo(orderToPatch, ModelState);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var updatedOrder = _mapper.Map<Order>(orderToPatch);
-            await _repository.UpdateAsync(updatedOrder);
+            var order = await _repository.GetByIdAsync(id);
+            if (order is null) return NotFound($"Order {id} not found.");
+
+            var patchTarget = _mapper.Map<OrderUpdateDto>(order);
+            patchDoc.ApplyTo(patchTarget, ModelState);
+
+            if (!TryValidateModel(patchTarget)) return BadRequest(ModelState);
+
+            _mapper.Map(patchTarget, order);
+            await _repository.UpdateAsync(order);
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
-            var existingOrder = await _repository.GetByIdAsync(id);
-            if (existingOrder == null)
-            {
-                return NotFound($"Order with ID {id} not found.");
-            }
-            await _repository.DeleteAsync(existingOrder);
+            var order = await _repository.GetByIdAsync(id);
+            if (order is null) return NotFound($"Order {id} not found.");
+
+            await _repository.DeleteAsync(order);
             return NoContent();
         }
     }

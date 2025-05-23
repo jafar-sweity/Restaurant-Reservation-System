@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using RestaurantReservation.API.Models.MenuItem;
 using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Models.Entities;
-using RestaurantReservation.Db.Repositories;
 
 namespace RestaurantReservation.API.Controllers
 {
@@ -15,14 +14,14 @@ namespace RestaurantReservation.API.Controllers
     public class MenuItemsController : ControllerBase
     {
         private readonly IRepository<MenuItem> _repository;
-        private readonly IRepository<Restaurant> _reservationRepository;
+        private readonly IRepository<Restaurant> _restaurantRepository;
         private readonly IMapper _mapper;
 
-        public MenuItemsController(IRepository<MenuItem> repository, IMapper mapper, IRepository<Restaurant> reservationRepository)
+        public MenuItemsController(IRepository<MenuItem> repository, IMapper mapper, IRepository<Restaurant> restaurantRepository)
         {
             _repository = repository;
             _mapper = mapper;
-            _reservationRepository = reservationRepository;
+            _restaurantRepository = restaurantRepository;
         }
 
         [HttpGet]
@@ -33,6 +32,7 @@ namespace RestaurantReservation.API.Controllers
             {
                 return NotFound("No menu items found.");
             }
+
             return Ok(_mapper.Map<IEnumerable<MenuItemDto>>(menuItems));
         }
 
@@ -44,20 +44,23 @@ namespace RestaurantReservation.API.Controllers
             {
                 return NotFound($"Menu item with ID {id} not found.");
             }
+
             return Ok(_mapper.Map<MenuItemDto>(menuItem));
         }
 
         [HttpPost]
         public async Task<ActionResult<MenuItemDto>> CreateMenuItem(MenuItemCreationDto menuItemCreationDto)
         {
-            var existingRestaurant = await _reservationRepository.ExistsAsync(menuItemCreationDto.RestaurantId);
-            if (!existingRestaurant)
+            var exists = await _restaurantRepository.ExistsAsync(menuItemCreationDto.RestaurantId);
+            if (!exists)
             {
                 return NotFound($"Restaurant with ID {menuItemCreationDto.RestaurantId} not found.");
             }
+
             var menuItem = _mapper.Map<MenuItem>(menuItemCreationDto);
             var createdMenuItem = await _repository.CreatAsync(menuItem);
             var menuItemDto = _mapper.Map<MenuItemDto>(createdMenuItem);
+
             return CreatedAtRoute("GetMenuItem", new { id = menuItemDto.ItemId }, menuItemDto);
         }
 
@@ -65,11 +68,11 @@ namespace RestaurantReservation.API.Controllers
         public async Task<IActionResult> UpdateMenuItem(int id, MenuItemUpdateDto menuItemUpdateDto)
         {
             var existingMenuItem = await _repository.GetByIdAsync(id);
-
-            if (existingMenuItem is null)
+            if (existingMenuItem == null)
                 return NotFound();
 
-            if (!await _reservationRepository.ExistsAsync(menuItemUpdateDto.RestaurantId))
+            var restaurantExists = await _restaurantRepository.ExistsAsync(menuItemUpdateDto.RestaurantId);
+            if (!restaurantExists)
             {
                 return NotFound(new { Message = "Restaurant not found." });
             }
@@ -87,19 +90,24 @@ namespace RestaurantReservation.API.Controllers
             {
                 return BadRequest();
             }
+
             var menuItem = await _repository.GetByIdAsync(id);
             if (menuItem == null)
             {
                 return NotFound();
             }
+
             var menuItemToPatch = _mapper.Map<MenuItemUpdateDto>(menuItem);
             patchDoc.ApplyTo(menuItemToPatch, ModelState);
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
             _mapper.Map(menuItemToPatch, menuItem);
             await _repository.UpdateAsync(menuItem);
+
             return NoContent();
         }
 
@@ -111,6 +119,7 @@ namespace RestaurantReservation.API.Controllers
             {
                 return NotFound($"Menu item with ID {id} not found.");
             }
+
             await _repository.DeleteAsync(menuItem);
             return NoContent();
         }

@@ -16,186 +16,135 @@ namespace RestaurantReservation.API.Controllers
     public class ReservationsController : ControllerBase
     {
         private readonly IRepository<Reservation> _repository;
-        private readonly IRepository<Restaurant> _reservationRepository;
+        private readonly IRepository<Restaurant> _restaurantRepository;
         private readonly IMapper _mapper;
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<Order> _orderRepository;
 
-        public ReservationsController(IRepository<Reservation> repository, IMapper mapper, IRepository<Restaurant> reservationRepository, IRepository<Customer> customerRepository,IRepository <Order> orederRepository)
+        public ReservationsController(
+            IRepository<Reservation> repository,
+            IMapper mapper,
+            IRepository<Restaurant> restaurantRepository,
+            IRepository<Customer> customerRepository,
+            IRepository<Order> orderRepository)
         {
             _repository = repository;
             _mapper = mapper;
-            _reservationRepository = reservationRepository;
+            _restaurantRepository = restaurantRepository;
             _customerRepository = customerRepository;
-            _orderRepository = orederRepository;
+            _orderRepository = orderRepository;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReservationDto>>> GetReservations()
         {
             var reservations = await _repository.GetAllAsync();
-            if (reservations == null || !reservations.Any())
-            {
-                return NotFound("No reservations found.");
-            }
-            var reservationDtos = _mapper.Map<IEnumerable<ReservationDto>>(reservations);
-            return Ok(reservationDtos);
+            return reservations.Any()
+                ? Ok(_mapper.Map<IEnumerable<ReservationDto>>(reservations))
+                : NotFound("No reservations found.");
         }
 
         [HttpGet("{id:int}", Name = "GetReservation")]
         public async Task<ActionResult<ReservationDto>> GetReservation(int id)
         {
             var reservation = await _repository.GetByIdAsync(id);
-            if (reservation == null)
-            {
-                return NotFound($"Reservation with ID {id} not found.");
-            }
-            var reservationDto = _mapper.Map<ReservationDto>(reservation);
-            return Ok(reservationDto);
+            return reservation is not null
+                ? Ok(_mapper.Map<ReservationDto>(reservation))
+                : NotFound($"Reservation {id} not found.");
         }
 
         [HttpPost]
-        public async Task<ActionResult<ReservationDto>> CreateReservation(ReservationCreationDto reservationCreationDto)
+        public async Task<ActionResult<ReservationDto>> CreateReservation(ReservationCreationDto creationDto)
         {
-            if (reservationCreationDto == null)
-            {
-                return BadRequest("Reservation data is null.");
-            }
+            if (!await _restaurantRepository.ExistsAsync(creationDto.RestaurantId))
+                return NotFound($"Restaurant {creationDto.RestaurantId} not found.");
 
-            var existingRestaurant = await _reservationRepository.ExistsAsync(reservationCreationDto.RestaurantId);
-
-            if (!existingRestaurant)
-            {
-                return NotFound($"Restaurant with ID {reservationCreationDto.RestaurantId} not found.");
-            }
-
-            var reservation = _mapper.Map<Reservation>(reservationCreationDto);
+            var reservation = _mapper.Map<Reservation>(creationDto);
             var createdReservation = await _repository.CreatAsync(reservation);
-            var reservationDto = _mapper.Map<ReservationDto>(createdReservation);
+            var result = _mapper.Map<ReservationDto>(createdReservation);
 
-            return CreatedAtRoute("GetReservation", new { id = reservationDto.ReservationId }, reservationDto);
+            return CreatedAtRoute(nameof(GetReservation), new { id = result.ReservationId }, result);
         }
 
-
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateReservation(int id, ReservationUpdateDto reservationUpdateDto)
+        public async Task<IActionResult> UpdateReservation(int id, ReservationUpdateDto updateDto)
         {
-            var existingReservation = await _repository.GetByIdAsync(id);
-            if (existingReservation == null)
-            {
-                return NotFound($"Reservation with ID {id} not found.");
-            }
-            var updatedReservation = _mapper.Map<Reservation>(reservationUpdateDto);
-            await _repository.UpdateAsync(updatedReservation);
+            var reservation = await _repository.GetByIdAsync(id);
+            if (reservation is null) return NotFound($"Reservation {id} not found.");
+
+            _mapper.Map(updateDto, reservation);
+            await _repository.UpdateAsync(reservation);
             return NoContent();
         }
 
-
         [HttpPatch("{id:int}")]
-        public async Task<IActionResult> PartiallyUpdateReservation(int id, JsonPatchDocument<ReservationUpdateDto> patchDocument)
+        public async Task<IActionResult> PartiallyUpdateReservation(int id, JsonPatchDocument<ReservationUpdateDto> patchDoc)
         {
-            if (patchDocument == null)
-            {
-                return BadRequest("Invalid patch document.");
-            }
-            var existingReservation = await _repository.GetByIdAsync(id);
-            if (existingReservation == null)
-            {
-                return NotFound($"Reservation with ID {id} not found.");
-            }
-            var reservationToPatch = _mapper.Map<ReservationUpdateDto>(existingReservation);
-            patchDocument.ApplyTo(reservationToPatch, ModelState);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var updatedReservation = _mapper.Map<Reservation>(reservationToPatch);
-            await _repository.UpdateAsync(updatedReservation);
+            var reservation = await _repository.GetByIdAsync(id);
+            if (reservation is null) return NotFound($"Reservation {id} not found.");
+
+            var patchTarget = _mapper.Map<ReservationUpdateDto>(reservation);
+            patchDoc.ApplyTo(patchTarget, ModelState);
+
+            if (!TryValidateModel(patchTarget)) return BadRequest(ModelState);
+
+            _mapper.Map(patchTarget, reservation);
+            await _repository.UpdateAsync(reservation);
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteReservation(int id)
         {
-            var existingReservation = await _repository.GetByIdAsync(id);
+            var reservation = await _repository.GetByIdAsync(id);
+            if (reservation is null) return NotFound($"Reservation {id} not found.");
 
-            if (existingReservation == null)
-            {
-                return NotFound($"Reservation with ID {id} not found.");
-            }
-
-            await _repository.DeleteAsync(existingReservation);
-
+            await _repository.DeleteAsync(reservation);
             return NoContent();
         }
 
         [HttpGet("customer/{customerId:int}")]
         public async Task<ActionResult<IEnumerable<ReservationDto>>> GetReservationsByCustomerId(int customerId)
         {
-            var existCustomer = _customerRepository.ExistsAsync(customerId);
-
-            if (!existCustomer.Result)
-            {
-                return NotFound($"Customer with ID {customerId} not found.");
-            }
+            if (!await _customerRepository.ExistsAsync(customerId))
+                return NotFound($"Customer {customerId} not found.");
 
             var reservations = await _repository.GetAllAsync();
             var customerReservations = reservations.Where(r => r.customerId == customerId).ToList();
 
-            if (customerReservations == null || !customerReservations.Any())
-            {
-                return NotFound($"No reservations found for customer with ID {customerId}.");
-            }
-
-            var reservationDtos = _mapper.Map<IEnumerable<ReservationDto>>(customerReservations);
-
-            return Ok(reservationDtos);
+            return customerReservations.Any()
+                ? Ok(_mapper.Map<IEnumerable<ReservationDto>>(customerReservations))
+                : NotFound($"No reservations found for customer {customerId}.");
         }
 
         [HttpGet("{reservationId:int}/orders")]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByReservationId(int reservationId)
         {
-            var existingReservation = await _repository.GetByIdAsync(reservationId);
-
-            if (existingReservation == null)
-            {
-                return NotFound($"Reservation with ID {reservationId} not found.");
-            }
+            if (!await _repository.ExistsAsync(reservationId))
+                return NotFound($"Reservation {reservationId} not found.");
 
             var orders = await _orderRepository.GetAllAsync();
             var reservationOrders = orders.Where(o => o.ReservationId == reservationId).ToList();
 
-            if (reservationOrders == null || !reservationOrders.Any())
-            {
-                return NotFound($"No orders found for reservation with ID {reservationId}.");
-            }
-
-            var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(reservationOrders);
-            return Ok(orderDtos);
+            return reservationOrders.Any()
+                ? Ok(_mapper.Map<IEnumerable<OrderDto>>(reservationOrders))
+                : NotFound($"No orders found for reservation {reservationId}.");
         }
-        //GET /api/reservations/{reservationId}/menu-items - List ordered menu items for a reservation.
+
         [HttpGet("{reservationId:int}/menu-items")]
         public async Task<ActionResult<IEnumerable<MenuItemDto>>> GetMenuItemsByReservationId(int reservationId)
         {
-            var existingReservation = await _repository.GetByIdAsync(reservationId);
-
-            if (existingReservation == null)
-            {
-                return NotFound($"Reservation with ID {reservationId} not found.");
-            }
+            if (!await _repository.ExistsAsync(reservationId))
+                return NotFound($"Reservation {reservationId} not found.");
 
             var orders = await _orderRepository.GetAllAsync();
             var reservationOrders = orders.Where(o => o.ReservationId == reservationId).ToList();
 
-            if (reservationOrders == null || !reservationOrders.Any())
-            {
-                return NotFound($"No orders found for reservation with ID {reservationId}.");
-            }
+            if (!reservationOrders.Any())
+                return NotFound($"No orders found for reservation {reservationId}.");
 
             var menuItems = reservationOrders.SelectMany(o => o.OrderItems).ToList();
-            var menuItemDtos = _mapper.Map<IEnumerable<MenuItemDto>>(menuItems);
-
-            return Ok(menuItemDtos);
+            return Ok(_mapper.Map<IEnumerable<MenuItemDto>>(menuItems));
         }
     }
 }

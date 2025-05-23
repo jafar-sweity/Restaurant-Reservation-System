@@ -20,7 +20,7 @@ namespace RestaurantReservation.API.Services
             {
                     new Claim(ClaimTypes.Name, UserName),
                     new Claim(ClaimTypes.Role, role)
-                };
+            };
 
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

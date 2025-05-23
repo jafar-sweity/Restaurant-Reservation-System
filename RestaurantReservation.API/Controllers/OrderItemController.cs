@@ -17,120 +17,107 @@ namespace RestaurantReservation.API.Controllers
         private readonly IRepository<Order> _orderRepository;
         private readonly IMapper _mapper;
 
-        public OrderItemController(IRepository<OrderItem> repository, IMapper mapper)
+        public OrderItemController(
+            IRepository<OrderItem> repository,
+            IRepository<Order> orderRepository,
+            IMapper mapper)
         {
             _repository = repository;
+            _orderRepository = orderRepository;
             _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<OrderItemDto>>> GetAllOrderItems()
+        public async Task<ActionResult<IEnumerable<OrderItemDto>>> GetAllOrderItems(int orderId)
         {
             var orderItems = await _repository.GetAllAsync();
-            if (orderItems == null || !orderItems.Any())
-            {
-                return NotFound("No order items found.");
-            }
-            var orderItemDtos = _mapper.Map<IEnumerable<OrderItemDto>>(orderItems);
-            return Ok(orderItemDtos);
+            var filtered = orderItems.Where(oi => oi.OrderId == orderId).ToList();
+
+            if (!filtered.Any())
+                return NotFound($"No order items found for Order ID {orderId}.");
+
+            return Ok(_mapper.Map<IEnumerable<OrderItemDto>>(filtered));
         }
 
         [HttpGet("{id:int}", Name = "GetOrderItem")]
-        public async Task<ActionResult<OrderItemDto>> GetOrderItem(int id)
+        public async Task<ActionResult<OrderItemDto>> GetOrderItem(int orderId, int id)
         {
             var orderItem = await _repository.GetByIdAsync(id);
-            if (orderItem == null)
-            {
-                return NotFound($"Order item with ID {id} not found.");
-            }
-            var orderItemDto = _mapper.Map<OrderItemDto>(orderItem);
-            return Ok(orderItemDto);
+
+            if (orderItem == null || orderItem.OrderId != orderId)
+                return NotFound($"Order item with ID {id} not found for Order ID {orderId}.");
+
+            return Ok(_mapper.Map<OrderItemDto>(orderItem));
         }
 
-        [HttpGet("order/{orderId:int}")]
-        public async Task<ActionResult<OrderItemDto>> GetOrderItemByOrderId(int orderId)
-        {
-            var orderItems = await _repository.GetAllAsync();
-            var orderItem = orderItems.FirstOrDefault(oi => oi.OrderId == orderId);
-            if (orderItem == null)
-            {
-                return NotFound($"Order item with Order ID {orderId} not found.");
-            }
-            var orderItemDto = _mapper.Map<OrderItemDto>(orderItem);
-            return Ok(orderItemDto);
-        }
-
-      
         [HttpPost]
         public async Task<ActionResult<OrderItemDto>> CreateOrderItem(int orderId, OrderItemCreationDto orderItemCreationDto)
         {
             if (orderItemCreationDto == null)
-            {
                 return BadRequest();
-            }
-            var order = await _orderRepository.GetByIdAsync(orderId);
-            if (order == null)
-            {
+
+            var orderExists = await _orderRepository.ExistsAsync(orderId);
+            if (!orderExists)
                 return NotFound($"Order with ID {orderId} not found.");
-            }
+
             var orderItem = _mapper.Map<OrderItem>(orderItemCreationDto);
             orderItem.OrderId = orderId;
+
             var addedOrderItem = await _repository.CreatAsync(orderItem);
-            var returnedOrderItem = _mapper.Map<OrderItemDto>(addedOrderItem);
-            return CreatedAtRoute("GetOrderItem", new { id = returnedOrderItem.OrderItemId }, returnedOrderItem);
+            var result = _mapper.Map<OrderItemDto>(addedOrderItem);
+
+            return CreatedAtRoute("GetOrderItem", new { orderId = orderId, id = result.OrderItemId }, result);
         }
 
-
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<OrderItemDto>> UpdateOrderItem(int id, OrderItemDto orderItemDto)
+        public async Task<IActionResult> UpdateOrderItem(int orderId, int id, OrderItemDto orderItemDto)
         {
             if (orderItemDto == null || id != orderItemDto.OrderItemId)
-            {
                 return BadRequest();
-            }
+
             var orderItem = await _repository.GetByIdAsync(id);
-            if (orderItem == null)
-            {
-                return NotFound($"Order item with ID {id} not found.");
-            }
+
+            if (orderItem == null || orderItem.OrderId != orderId)
+                return NotFound($"Order item with ID {id} not found for Order ID {orderId}.");
+
             _mapper.Map(orderItemDto, orderItem);
             await _repository.UpdateAsync(orderItem);
+
+            return NoContent();
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> PartialUpdateOrderItem(int orderId, int id, JsonPatchDocument<OrderItemDto> patchDoc)
+        {
+            if (patchDoc == null)
+                return BadRequest();
+
+            var orderItem = await _repository.GetByIdAsync(id);
+
+            if (orderItem == null || orderItem.OrderId != orderId)
+                return NotFound($"Order item with ID {id} not found for Order ID {orderId}.");
+
+            var itemToPatch = _mapper.Map<OrderItemDto>(orderItem);
+            patchDoc.ApplyTo(itemToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            _mapper.Map(itemToPatch, orderItem);
+            await _repository.UpdateAsync(orderItem);
+
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> DeleteOrderItem(int id)
+        public async Task<IActionResult> DeleteOrderItem(int orderId, int id)
         {
             var orderItem = await _repository.GetByIdAsync(id);
-            if (orderItem == null)
-            {
-                return NotFound($"Order item with ID {id} not found.");
-            }
+
+            if (orderItem == null || orderItem.OrderId != orderId)
+                return NotFound($"Order item with ID {id} not found for Order ID {orderId}.");
+
             await _repository.DeleteAsync(orderItem);
-            return NoContent();
-
-        }
-
-        [HttpPatch("{id:int}")]
-        public async Task<ActionResult<OrderItemDto>> PartialUpdateOrderItem(int id, JsonPatchDocument<OrderItemDto> patchDoc)
-        {
-            if (patchDoc == null)
-            {
-                return BadRequest();
-            }
-            var orderItem = await _repository.GetByIdAsync(id);
-            if (orderItem == null)
-            {
-                return NotFound($"Order item with ID {id} not found.");
-            }
-            var orderItemToPatch = _mapper.Map<OrderItemDto>(orderItem);
-            patchDoc.ApplyTo(orderItemToPatch, ModelState);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            _mapper.Map(orderItemToPatch, orderItem);
-            await _repository.UpdateAsync(orderItem);
             return NoContent();
         }
     }
