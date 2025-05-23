@@ -10,7 +10,7 @@ namespace RestaurantReservation.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class TableController : Controller
-    { 
+    {
         private readonly IRepository<Table> _repository;
         private readonly IMapper _mapper;
         private readonly IRepository<Restaurant> _restaurantRepository;
@@ -62,7 +62,8 @@ namespace RestaurantReservation.API.Controllers
         public async Task<ActionResult> Update(int id, TableUpdateDto tableUpdateDto)
         {
             var existingTable = await _repository.GetByIdAsync(id);
-            if (existingTable == null) {
+            if (existingTable == null)
+            {
                 return NotFound($"Table with ID {id} not found.");
             }
 
@@ -106,6 +107,21 @@ namespace RestaurantReservation.API.Controllers
 
             var table = _mapper.Map<Table>(tableToPatch);
             await _repository.UpdateAsync(table);
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var existingTable = await _repository.GetByIdAsync(id);
+
+            if (existingTable == null)
+            {
+                return NotFound($"Table with ID {id} not found.");
+            }
+
+            await _repository.DeleteAsync(existingTable);
 
             return NoContent();
         }
