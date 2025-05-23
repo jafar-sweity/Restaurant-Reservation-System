@@ -13,7 +13,7 @@ namespace RestaurantReservation.Db.Repositories
             _context = context;
             _dbSet = context.Set<TEntity>();
         }
-
+        
         public async Task<TEntity> CreatAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
@@ -35,6 +35,16 @@ namespace RestaurantReservation.Db.Repositories
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await _dbSet.ToListAsync();
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _dbSet.FindAsync(id) != null;
         }
     }
 }

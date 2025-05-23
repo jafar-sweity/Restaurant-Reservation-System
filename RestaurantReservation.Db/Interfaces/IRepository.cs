@@ -12,5 +12,7 @@ namespace RestaurantReservation.Db.Interfaces
         public Task UpdateAsync(TEntity entity);
         public Task DeleteAsync(TEntity entity);
         public Task<TEntity> GetByIdAsync(int id);
+        Task<IEnumerable<TEntity>> GetAllAsync();
+        public  Task<bool> ExistsAsync(int id);
     }
 }
