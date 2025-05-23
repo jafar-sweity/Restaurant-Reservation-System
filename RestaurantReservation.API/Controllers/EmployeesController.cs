@@ -15,14 +15,16 @@ namespace RestaurantReservation.API.Controllers
     {
         private readonly IRepository<Employee> _repository;
         private readonly IRepository<Restaurant> _reservationRepository;
+        private readonly IRepository<Order> _orderRepository;
 
         private readonly IMapper _mapper;
 
-        public EmployeesController(IRepository<Employee> repository, IMapper mapper , IRepository<Restaurant> repository1)
+        public EmployeesController(IRepository<Employee> repository, IMapper mapper , IRepository<Restaurant> repository1, IRepository<Order> orderRepository)
         {
             _repository = repository;
             _reservationRepository = repository1;
             _mapper = mapper;
+            _orderRepository = orderRepository;
         }
 
         [HttpGet]
@@ -147,5 +149,26 @@ namespace RestaurantReservation.API.Controllers
             return Ok(toReturn);
         }
 
+        [HttpGet("{employeeId:int}/average-order-amount")]
+        public async Task<ActionResult<decimal>> GetAverageOrderAmount(int employeeId)
+        {
+            var employee = await _repository.GetByIdAsync(employeeId);
+
+            if (employee == null)
+            {
+                return NotFound($"Employee with ID {employeeId} not found.");
+            }
+
+            var orders = await _orderRepository.GetAllAsync();
+            var employeeOrders = orders.Where(o => o.EmployeeId == employeeId).ToList();
+
+            if (!employeeOrders.Any())
+            {
+                return NotFound($"No orders found for employee with ID {employeeId}.");
+            }
+
+            var averageOrderAmount = employeeOrders.Average(o => o.TotalAmount);
+            return Ok(averageOrderAmount);
+        }
     }
 }
