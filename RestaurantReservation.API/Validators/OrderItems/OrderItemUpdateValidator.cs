@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using RestaurantReservation.API.Models.OrderItem;
 
 namespace RestaurantReservation.API.Validators.OrderItems
 {
