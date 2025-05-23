@@ -13,7 +13,7 @@ namespace RestaurantReservation.Db.Repositories
             _context = context;
             _dbSet = context.Set<TEntity>();
         }
-
+        
         public async Task<TEntity> CreatAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);

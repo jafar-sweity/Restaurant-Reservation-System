@@ -28,7 +28,7 @@ namespace RestaurantReservation.API.Controllers
             return Ok(tableDtos);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetTable")]
         public async Task<ActionResult<TableDto>> GetById(int id)
         {
             var table = await _repository.GetByIdAsync(id);
@@ -38,6 +38,24 @@ namespace RestaurantReservation.API.Controllers
             }
             var tableDto = _mapper.Map<TableDto>(table);
             return Ok(tableDto);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<TableDto>> Create(TableCreationDto tableCreationDto)
+        {
+            var restaurant = await _restaurantRepository.ExistsAsync(tableCreationDto.RestaurantId);
+
+            if (!restaurant)
+            {
+                return NotFound($"Restaurant with ID {tableCreationDto.RestaurantId} not found.");
+            }
+
+            var table = _mapper.Map<Table>(tableCreationDto);
+            var createdTable = await _repository.CreatAsync(table);
+            var tableDto = _mapper.Map<TableDto>(createdTable);
+
+            return CreatedAtRoute("GetTable", new { id = tableDto.TableId }, tableDto);
+
         }
 
     }
