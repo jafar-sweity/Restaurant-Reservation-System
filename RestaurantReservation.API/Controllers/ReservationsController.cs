@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantReservation.API.Models.MenuItem;
 using RestaurantReservation.API.Models.Order;
 using RestaurantReservation.API.Models.Reservation;
 using RestaurantReservation.Db.Interfaces;
@@ -153,18 +154,46 @@ namespace RestaurantReservation.API.Controllers
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByReservationId(int reservationId)
         {
             var existingReservation = await _repository.GetByIdAsync(reservationId);
+
             if (existingReservation == null)
             {
                 return NotFound($"Reservation with ID {reservationId} not found.");
             }
+
             var orders = await _orderRepository.GetAllAsync();
             var reservationOrders = orders.Where(o => o.ReservationId == reservationId).ToList();
+
             if (reservationOrders == null || !reservationOrders.Any())
             {
                 return NotFound($"No orders found for reservation with ID {reservationId}.");
             }
+
             var orderDtos = _mapper.Map<IEnumerable<OrderDto>>(reservationOrders);
             return Ok(orderDtos);
+        }
+        //GET /api/reservations/{reservationId}/menu-items - List ordered menu items for a reservation.
+        [HttpGet("{reservationId:int}/menu-items")]
+        public async Task<ActionResult<IEnumerable<MenuItemDto>>> GetMenuItemsByReservationId(int reservationId)
+        {
+            var existingReservation = await _repository.GetByIdAsync(reservationId);
+
+            if (existingReservation == null)
+            {
+                return NotFound($"Reservation with ID {reservationId} not found.");
+            }
+
+            var orders = await _orderRepository.GetAllAsync();
+            var reservationOrders = orders.Where(o => o.ReservationId == reservationId).ToList();
+
+            if (reservationOrders == null || !reservationOrders.Any())
+            {
+                return NotFound($"No orders found for reservation with ID {reservationId}.");
+            }
+
+            var menuItems = reservationOrders.SelectMany(o => o.OrderItems).ToList();
+            var menuItemDtos = _mapper.Map<IEnumerable<MenuItemDto>>(menuItems);
+
+            return Ok(menuItemDtos);
         }
     }
 }
