@@ -4,11 +4,13 @@ using RestaurantReservation.Db.Interfaces;
 using RestaurantReservation.Db.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RestaurantReservation.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CustomerController : ControllerBase
     {
         private readonly IRepository<Customer> _repository;
