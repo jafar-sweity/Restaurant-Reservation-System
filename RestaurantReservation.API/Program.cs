@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using FluentValidation.AspNetCore;
+using System.Reflection;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<RestaurantReservationDbContext>(options =>
@@ -14,7 +18,12 @@ builder.Services.AddDbContext<RestaurantReservationDbContext>(options =>
 
 builder.Services
     .AddControllers()
-    .AddNewtonsoftJson(); 
+    .AddNewtonsoftJson().AddFluentValidation(config =>
+    {
+        config.ImplicitlyValidateChildProperties = true;
+        config.ImplicitlyValidateRootCollectionElements = true;
+        config.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+    });
 
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
